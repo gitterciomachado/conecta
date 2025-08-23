@@ -78,6 +78,19 @@ class _LoginPageState extends State<LoginPage> {
             'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
         latitude: posicao.latitude,
         longitude: posicao.longitude,
+        genero: 'Masculino',
+        estadoCivil: 'Solteiro',
+        filhos: 'Não tem',
+        religiao: 'Espiritualista',
+        habitosSaude: 'Não fuma, bebe socialmente',
+        atividadeFisica: 'Moderado',
+        escolaridade: 'Faculdade',
+        profissao: 'Desenvolvedor',
+        signo: 'Leão',
+        linguagemAmor: 'Tempo de qualidade',
+        valoresPessoais: 'Família, liberdade',
+        estiloViagem: 'Ama viajar',
+        estiloVida: 'Mais social',
       );
 
       box.put(email, novoUsuario);

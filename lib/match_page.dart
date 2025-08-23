@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:geolocator/geolocator.dart';
-import 'models/usuario.dart';
-import 'models/match.dart';
-import 'edit_profile_page.dart';
-import 'match_history_page.dart';
+import 'package:conecta_app/models/usuario.dart';
+import 'package:conecta_app/models/match.dart';
+import 'package:conecta_app/edit_profile_page.dart';
+import 'package:conecta_app/match_history_page.dart';
+import 'package:conecta_app/mapa_page.dart';
 
 class MatchPage extends StatefulWidget {
   final Usuario usuario;
@@ -38,6 +39,8 @@ class _MatchPageState extends State<MatchPage> {
   @override
   void initState() {
     super.initState();
+    final filtrados = filtrarPorDistancia(perfis, widget.usuario.latitude, widget.usuario.longitude, 20);
+    perfis = filtrados;
     ordenarPorCompatibilidade();
   }
 
@@ -55,8 +58,25 @@ class _MatchPageState extends State<MatchPage> {
     return listaA.where((i) => listaB.contains(i)).length;
   }
 
-  double calcularDistanciaKm(double lat1, double lon1, double lat2, double lon2) {
+  double? calcularDistanciaKm(double? lat1, double? lon1, double? lat2, double? lon2) {
+    if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
     return Geolocator.distanceBetween(lat1, lon1, lat2, lon2) / 1000;
+  }
+
+  List<Map<String, dynamic>> filtrarPorDistancia(
+    List<Map<String, dynamic>> lista,
+    double? latUser,
+    double? lonUser,
+    double raioKm,
+  ) {
+    return lista.where((perfil) {
+      final lat = perfil['latitude'];
+      final lon = perfil['longitude'];
+      if (latUser == null || lonUser == null || lat == null || lon == null) return false;
+
+      final distancia = Geolocator.distanceBetween(latUser, lonUser, lat, lon) / 1000;
+      return distancia <= raioKm;
+    }).toList();
   }
 
   void salvarMatch(Map<String, dynamic> perfil) {
@@ -100,6 +120,17 @@ class _MatchPageState extends State<MatchPage> {
               );
             },
           ),
+          IconButton(
+            icon: Icon(Icons.map),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => MapaPage(usuario: widget.usuario, perfis: perfis),
+                ),
+              );
+            },
+          ),
         ],
       ),
       body: PageView.builder(
@@ -137,7 +168,8 @@ class _MatchPageState extends State<MatchPage> {
                 ),
                 SizedBox(height: 10),
                 Text('Compatibilidade: $compatibilidade pontos'),
-                Text('Distância: ${distanciaKm.toStringAsFixed(1)} km'),
+                if (distanciaKm != null)
+                  Text('Distância: ${distanciaKm.toStringAsFixed(1)} km'),
                 SizedBox(height: 30),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,

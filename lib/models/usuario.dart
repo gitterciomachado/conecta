@@ -23,10 +23,49 @@ class Usuario extends HiveObject {
   String fotoUrl;
 
   @HiveField(6)
-  double latitude;
+  double? latitude;
 
   @HiveField(7)
-  double longitude;
+  double? longitude;
+
+  @HiveField(8)
+  String? genero;
+
+  @HiveField(9)
+  String? estadoCivil;
+
+  @HiveField(10)
+  String? filhos;
+
+  @HiveField(11)
+  String? religiao;
+
+  @HiveField(12)
+  String? habitosSaude;
+
+  @HiveField(13)
+  String? atividadeFisica;
+
+  @HiveField(14)
+  String? escolaridade;
+
+  @HiveField(15)
+  String? profissao;
+
+  @HiveField(16)
+  String? signo;
+
+  @HiveField(17)
+  String? linguagemAmor;
+
+  @HiveField(18)
+  String? valoresPessoais;
+
+  @HiveField(19)
+  String? estiloViagem;
+
+  @HiveField(20)
+  String? estiloVida;
 
   Usuario({
     required this.email,
@@ -35,7 +74,20 @@ class Usuario extends HiveObject {
     required this.idade,
     required this.interesses,
     required this.fotoUrl,
-    required this.latitude,
-    required this.longitude,
+    this.latitude,
+    this.longitude,
+    this.genero,
+    this.estadoCivil,
+    this.filhos,
+    this.religiao,
+    this.habitosSaude,
+    this.atividadeFisica,
+    this.escolaridade,
+    this.profissao,
+    this.signo,
+    this.linguagemAmor,
+    this.valoresPessoais,
+    this.estiloViagem,
+    this.estiloVida,
   });
 }
