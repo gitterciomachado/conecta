@@ -8,6 +8,9 @@ import 'chat_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
+  
+  await Hive.deleteBoxFromDisk('usuarios'); // Apaga a box
+  await Hive.openBox<Usuario>('usuarios');  // Reabre vazia
 
   Hive.registerAdapter(UsuarioAdapter());
   Hive.registerAdapter(MatchAdapter());

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:conecta_app/models/usuario.dart';
-import 'package:conecta_app/models/match.dart';
-import 'package:conecta_app/edit_profile_page.dart';
-import 'package:conecta_app/match_history_page.dart';
-import 'package:conecta_app/mapa_page.dart';
+import 'models/usuario.dart';
+import 'models/match.dart';
+import 'edit_profile_page.dart';
+import 'match_history_page.dart';
+import 'mapa_page.dart';
+import 'verificacao_page.dart';
 
 class MatchPage extends StatefulWidget {
   final Usuario usuario;
@@ -24,6 +25,7 @@ class _MatchPageState extends State<MatchPage> {
       'interesses': 'Filmes, Corrida, Música',
       'latitude': -5.800,
       'longitude': -35.200,
+      'verificado': true,
     },
     {
       'nome': 'Carla',
@@ -31,6 +33,7 @@ class _MatchPageState extends State<MatchPage> {
       'interesses': 'Leitura, Yoga, Música',
       'latitude': -5.810,
       'longitude': -35.220,
+      'verificado': false,
     },
   ];
 
@@ -39,7 +42,12 @@ class _MatchPageState extends State<MatchPage> {
   @override
   void initState() {
     super.initState();
-    final filtrados = filtrarPorDistancia(perfis, widget.usuario.latitude, widget.usuario.longitude, 20);
+    final filtrados = filtrarPorDistancia(
+      perfis,
+      widget.usuario.latitude,
+      widget.usuario.longitude,
+      20,
+    );
     perfis = filtrados;
     ordenarPorCompatibilidade();
   }
@@ -131,6 +139,17 @@ class _MatchPageState extends State<MatchPage> {
               );
             },
           ),
+          IconButton(
+            icon: Icon(Icons.verified_user),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => VerificacaoPage(usuario: widget.usuario),
+                ),
+              );
+            },
+          ),
         ],
       ),
       body: PageView.builder(
@@ -158,9 +177,19 @@ class _MatchPageState extends State<MatchPage> {
                   backgroundImage: NetworkImage(perfil['foto']),
                 ),
                 SizedBox(height: 20),
-                Text(
-                  perfil['nome'],
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      perfil['nome'],
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    if (perfil['verificado'] == true)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 6.0),
+                        child: Icon(Icons.verified, color: Colors.blue, size: 20),
+                      ),
+                  ],
                 ),
                 Text(
                   perfil['interesses'],

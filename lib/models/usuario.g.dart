@@ -38,13 +38,14 @@ class UsuarioAdapter extends TypeAdapter<Usuario> {
       valoresPessoais: fields[18] as String?,
       estiloViagem: fields[19] as String?,
       estiloVida: fields[20] as String?,
+      verificado: fields[21] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, Usuario obj) {
     writer
-      ..writeByte(21)
+      ..writeByte(22)
       ..writeByte(0)
       ..write(obj.email)
       ..writeByte(1)
@@ -86,7 +87,9 @@ class UsuarioAdapter extends TypeAdapter<Usuario> {
       ..writeByte(19)
       ..write(obj.estiloViagem)
       ..writeByte(20)
-      ..write(obj.estiloVida);
+      ..write(obj.estiloVida)
+      ..writeByte(21)
+      ..write(obj.verificado);
   }
 
   @override

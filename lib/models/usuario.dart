@@ -67,6 +67,9 @@ class Usuario extends HiveObject {
   @HiveField(20)
   String? estiloVida;
 
+  @HiveField(21)
+  bool verificado;
+
   Usuario({
     required this.email,
     required this.senha,
@@ -89,5 +92,6 @@ class Usuario extends HiveObject {
     this.valoresPessoais,
     this.estiloViagem,
     this.estiloVida,
+    this.verificado = false,
   });
 }
