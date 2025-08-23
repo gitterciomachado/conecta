@@ -8,10 +8,13 @@ import 'chat_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
+
   Hive.registerAdapter(UsuarioAdapter());
   Hive.registerAdapter(MatchAdapter());
+
   await Hive.openBox<Usuario>('usuarios');
   await Hive.openBox<Match>('matches');
+
   runApp(ConectaApp());
 }
 

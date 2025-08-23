@@ -22,6 +22,12 @@ class Usuario extends HiveObject {
   @HiveField(5)
   String fotoUrl;
 
+  @HiveField(6)
+  double latitude;
+
+  @HiveField(7)
+  double longitude;
+
   Usuario({
     required this.email,
     required this.senha,
@@ -29,5 +35,7 @@ class Usuario extends HiveObject {
     required this.idade,
     required this.interesses,
     required this.fotoUrl,
+    required this.latitude,
+    required this.longitude,
   });
 }

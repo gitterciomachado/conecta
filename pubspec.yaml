@@ -1,5 +1,5 @@
 name: conecta_app
-description: App de relacionamento com Hive e suporte a imagens locais
+description: App de relacionamento com Hive, localização e imagens locais
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -14,11 +14,16 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
 
-  # Acesso a arquivos locais
+  # Geração de adapters Hive
+  build_runner: ^2.4.8
+  hive_generator: ^2.0.1
+
+  # Imagens locais
+  image_picker: ^1.0.7
   path_provider: ^2.1.2
 
-  # Seleção de imagens da galeria
-  image_picker: ^1.0.7
+  # Localização e distância
+  geolocator: ^10.1.0
 
   # Ícones padrão do iOS
   cupertino_icons: ^1.0.6
@@ -26,10 +31,6 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  # Geração de adapters Hive
-  build_runner: ^2.4.8
-  hive_generator: ^2.0.1
 
 flutter:
   uses-material-design: true

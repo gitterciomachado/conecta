@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:geolocator/geolocator.dart';
 import 'models/usuario.dart';
 import 'models/match.dart';
 import 'edit_profile_page.dart';
@@ -15,27 +16,55 @@ class MatchPage extends StatefulWidget {
 }
 
 class _MatchPageState extends State<MatchPage> {
-  final List<Map<String, String>> perfis = [
+  List<Map<String, dynamic>> perfis = [
     {
       'nome': 'Bruno',
       'foto': 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e',
-      'interesses': 'Filmes, Corrida'
+      'interesses': 'Filmes, Corrida, Música',
+      'latitude': -5.800,
+      'longitude': -35.200,
     },
     {
       'nome': 'Carla',
       'foto': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2',
-      'interesses': 'Leitura, Yoga'
+      'interesses': 'Leitura, Yoga, Música',
+      'latitude': -5.810,
+      'longitude': -35.220,
     },
   ];
 
   final PageController _controller = PageController(viewportFraction: 0.9);
 
-  void salvarMatch(Map<String, String> perfil) {
+  @override
+  void initState() {
+    super.initState();
+    ordenarPorCompatibilidade();
+  }
+
+  void ordenarPorCompatibilidade() {
+    perfis.sort((a, b) {
+      final scoreA = calcularCompatibilidade(widget.usuario.interesses, a['interesses']);
+      final scoreB = calcularCompatibilidade(widget.usuario.interesses, b['interesses']);
+      return scoreB.compareTo(scoreA);
+    });
+  }
+
+  int calcularCompatibilidade(String interessesA, String interessesB) {
+    final listaA = interessesA.split(', ');
+    final listaB = interessesB.split(', ');
+    return listaA.where((i) => listaB.contains(i)).length;
+  }
+
+  double calcularDistanciaKm(double lat1, double lon1, double lat2, double lon2) {
+    return Geolocator.distanceBetween(lat1, lon1, lat2, lon2) / 1000;
+  }
+
+  void salvarMatch(Map<String, dynamic> perfil) {
     final matchBox = Hive.box<Match>('matches');
     matchBox.add(Match(
-      nome: perfil['nome']!,
-      interesses: perfil['interesses']!,
-      fotoUrl: perfil['foto']!,
+      nome: perfil['nome'],
+      interesses: perfil['interesses'],
+      fotoUrl: perfil['foto'],
     ));
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -78,6 +107,14 @@ class _MatchPageState extends State<MatchPage> {
         controller: _controller,
         itemBuilder: (context, index) {
           final perfil = perfis[index];
+          final compatibilidade = calcularCompatibilidade(widget.usuario.interesses, perfil['interesses']);
+          final distanciaKm = calcularDistanciaKm(
+            widget.usuario.latitude,
+            widget.usuario.longitude,
+            perfil['latitude'],
+            perfil['longitude'],
+          );
+
           return Card(
             margin: EdgeInsets.symmetric(vertical: 40, horizontal: 10),
             elevation: 6,
@@ -87,17 +124,20 @@ class _MatchPageState extends State<MatchPage> {
               children: [
                 CircleAvatar(
                   radius: 60,
-                  backgroundImage: NetworkImage(perfil['foto']!),
+                  backgroundImage: NetworkImage(perfil['foto']),
                 ),
                 SizedBox(height: 20),
                 Text(
-                  perfil['nome']!,
+                  perfil['nome'],
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  perfil['interesses']!,
+                  perfil['interesses'],
                   style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                 ),
+                SizedBox(height: 10),
+                Text('Compatibilidade: $compatibilidade pontos'),
+                Text('Distância: ${distanciaKm.toStringAsFixed(1)} km'),
                 SizedBox(height: 30),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
