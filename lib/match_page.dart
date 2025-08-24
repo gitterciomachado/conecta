@@ -45,6 +45,10 @@ class _MatchPageState extends State<MatchPage> {
   @override
   void initState() {
     super.initState();
+    carregarPerfis();
+  }
+
+  void carregarPerfis() {
     final filtrados = filtrarPorDistancia(
       perfisOriginais,
       widget.usuario.latitude,
@@ -52,12 +56,17 @@ class _MatchPageState extends State<MatchPage> {
       20,
     );
 
-    final bloqueados = widget.usuario.bloqueados;
-    perfis = filtrados.where((perfil) {
-      return !bloqueados.contains(perfil['id']);
+    final bloqueados = widget.usuario.bloqueados ?? [];
+
+    final visiveis = filtrados.where((perfil) {
+      final id = perfil['id'];
+      return id != null && !bloqueados.contains(id);
     }).toList();
 
-    ordenarPorCompatibilidade();
+    setState(() {
+      perfis = visiveis;
+      ordenarPorCompatibilidade();
+    });
   }
 
   void ordenarPorCompatibilidade() {
@@ -97,6 +106,15 @@ class _MatchPageState extends State<MatchPage> {
 
   void salvarMatch(Map<String, dynamic> perfil) {
     final matchBox = Hive.box<Match>('matches');
+
+    final jaExiste = matchBox.values.any((m) => m.usuarioAlvoId == perfil['id']);
+    if (jaExiste) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${perfil['nome']} já está nos seus matches')),
+      );
+      return;
+    }
+
     matchBox.add(Match(
       nome: perfil['nome'],
       interesses: perfil['interesses'],
@@ -127,13 +145,9 @@ class _MatchPageState extends State<MatchPage> {
             child: Text('Bloquear'),
             onPressed: () {
               Navigator.pop(context);
-              setState(() {
-                widget.usuario.bloqueados.add(id);
-                widget.usuario.save();
-                if (index >= 0 && index < perfis.length) {
-                  perfis.removeAt(index);
-                }
-              });
+              widget.usuario.bloqueados.add(id);
+              widget.usuario.save();
+              carregarPerfis();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('${perfil['nome']} foi bloqueado')),
               );
@@ -144,12 +158,28 @@ class _MatchPageState extends State<MatchPage> {
     );
   }
 
+  void restaurarPerfisBloqueados() {
+    setState(() {
+      widget.usuario.bloqueados.clear();
+      widget.usuario.save();
+      carregarPerfis();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Perfis desbloqueados e restaurados')),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Olá, ${widget.usuario.nome}'),
         actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            tooltip: 'Restaurar perfis',
+            onPressed: restaurarPerfisBloqueados,
+          ),
           IconButton(
             icon: Icon(Icons.edit),
             onPressed: () {
