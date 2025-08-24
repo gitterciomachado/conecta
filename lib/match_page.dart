@@ -22,6 +22,9 @@ class _MatchPageState extends State<MatchPage> {
     {
       'id': 'bruno123',
       'nome': 'Bruno',
+      'email': 'bruno@example.com',
+      'senha': 'abc123',
+      'idade': 28,
       'foto': 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e',
       'interesses': 'Filmes, Corrida, Música',
       'latitude': -5.800,
@@ -31,6 +34,9 @@ class _MatchPageState extends State<MatchPage> {
     {
       'id': 'carla456',
       'nome': 'Carla',
+      'email': 'carla@example.com',
+      'senha': 'xyz789',
+      'idade': 32,
       'foto': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2',
       'interesses': 'Leitura, Yoga, Música',
       'latitude': -5.810,
@@ -56,8 +62,26 @@ class _MatchPageState extends State<MatchPage> {
       20,
     );
 
-    final bloqueados = widget.usuario.bloqueados ?? [];
+    final usuarioBox = Hive.box<Usuario>('usuarios');
+    for (var perfil in filtrados) {
+      final id = perfil['id'];
+      if (id != null && !usuarioBox.containsKey(id)) {
+        usuarioBox.put(id, Usuario(
+          id: id,
+          email: perfil['email'] ?? '${id}@exemplo.com',
+          senha: perfil['senha'] ?? '123456',
+          nome: perfil['nome'],
+          idade: perfil['idade'] ?? 30,
+          interesses: perfil['interesses'],
+          fotoUrl: perfil['foto'],
+          latitude: perfil['latitude'],
+          longitude: perfil['longitude'],
+          verificado: perfil['verificado'] ?? false,
+        ));
+      }
+    }
 
+    final bloqueados = widget.usuario.bloqueados;
     final visiveis = filtrados.where((perfil) {
       final id = perfil['id'];
       return id != null && !bloqueados.contains(id);
@@ -106,7 +130,6 @@ class _MatchPageState extends State<MatchPage> {
 
   void salvarMatch(Map<String, dynamic> perfil) {
     final matchBox = Hive.box<Match>('matches');
-
     final jaExiste = matchBox.values.any((m) => m.usuarioAlvoId == perfil['id']);
     if (jaExiste) {
       ScaffoldMessenger.of(context).showSnackBar(
