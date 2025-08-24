@@ -5,72 +5,79 @@ part 'usuario.g.dart';
 @HiveType(typeId: 0)
 class Usuario extends HiveObject {
   @HiveField(0)
-  String email;
+  String id;
 
   @HiveField(1)
-  String senha;
+  String email;
 
   @HiveField(2)
-  String nome;
+  String senha;
 
   @HiveField(3)
-  int idade;
+  String nome;
 
   @HiveField(4)
-  String interesses;
+  int idade;
 
   @HiveField(5)
-  String fotoUrl;
+  String interesses;
 
   @HiveField(6)
-  double? latitude;
+  String fotoUrl;
 
   @HiveField(7)
-  double? longitude;
+  double? latitude;
 
   @HiveField(8)
-  String? genero;
+  double? longitude;
 
   @HiveField(9)
-  String? estadoCivil;
+  String? genero;
 
   @HiveField(10)
-  String? filhos;
+  String? estadoCivil;
 
   @HiveField(11)
-  String? religiao;
+  String? filhos;
 
   @HiveField(12)
-  String? habitosSaude;
+  String? religiao;
 
   @HiveField(13)
-  String? atividadeFisica;
+  String? habitosSaude;
 
   @HiveField(14)
-  String? escolaridade;
+  String? atividadeFisica;
 
   @HiveField(15)
-  String? profissao;
+  String? escolaridade;
 
   @HiveField(16)
-  String? signo;
+  String? profissao;
 
   @HiveField(17)
-  String? linguagemAmor;
+  String? signo;
 
   @HiveField(18)
-  String? valoresPessoais;
+  String? linguagemAmor;
 
   @HiveField(19)
-  String? estiloViagem;
+  String? valoresPessoais;
 
   @HiveField(20)
-  String? estiloVida;
+  String? estiloViagem;
 
   @HiveField(21)
+  String? estiloVida;
+
+  @HiveField(22)
   bool verificado;
 
+  @HiveField(23)
+  List<String> bloqueados;
+
   Usuario({
+    required this.id,
     required this.email,
     required this.senha,
     required this.nome,
@@ -93,5 +100,12 @@ class Usuario extends HiveObject {
     this.estiloViagem,
     this.estiloVida,
     this.verificado = false,
+    this.bloqueados = const [],
   });
+
+  /// Busca um usuário pelo ID dentro da box Hive
+  static Usuario buscarPorId(String id) {
+    final box = Hive.box<Usuario>('usuarios');
+    return box.values.firstWhere((usuario) => usuario.id == id);
+  }
 }

@@ -18,8 +18,9 @@ class MatchPage extends StatefulWidget {
 }
 
 class _MatchPageState extends State<MatchPage> {
-  List<Map<String, dynamic>> perfis = [
+  List<Map<String, dynamic>> perfisOriginais = [
     {
+      'id': 'bruno123',
       'nome': 'Bruno',
       'foto': 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e',
       'interesses': 'Filmes, Corrida, Música',
@@ -28,6 +29,7 @@ class _MatchPageState extends State<MatchPage> {
       'verificado': true,
     },
     {
+      'id': 'carla456',
       'nome': 'Carla',
       'foto': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2',
       'interesses': 'Leitura, Yoga, Música',
@@ -37,18 +39,24 @@ class _MatchPageState extends State<MatchPage> {
     },
   ];
 
+  List<Map<String, dynamic>> perfis = [];
   final PageController _controller = PageController(viewportFraction: 0.9);
 
   @override
   void initState() {
     super.initState();
     final filtrados = filtrarPorDistancia(
-      perfis,
+      perfisOriginais,
       widget.usuario.latitude,
       widget.usuario.longitude,
       20,
     );
-    perfis = filtrados;
+
+    final bloqueados = widget.usuario.bloqueados;
+    perfis = filtrados.where((perfil) {
+      return !bloqueados.contains(perfil['id']);
+    }).toList();
+
     ordenarPorCompatibilidade();
   }
 
@@ -93,10 +101,46 @@ class _MatchPageState extends State<MatchPage> {
       nome: perfil['nome'],
       interesses: perfil['interesses'],
       fotoUrl: perfil['foto'],
+      usuarioAlvoId: perfil['id'],
     ));
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Você curtiu ${perfil['nome']}!')),
+    );
+  }
+
+  void bloquearPerfil(Map<String, dynamic> perfil, int index) {
+    final id = perfil['id'];
+    if (widget.usuario.bloqueados.contains(id)) return;
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Bloquear ${perfil['nome']}?'),
+        content: Text('Você não verá mais este perfil nas sugestões.'),
+        actions: [
+          TextButton(
+            child: Text('Cancelar'),
+            onPressed: () => Navigator.pop(context),
+          ),
+          TextButton(
+            child: Text('Bloquear'),
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                widget.usuario.bloqueados.add(id);
+                widget.usuario.save();
+                if (index >= 0 && index < perfis.length) {
+                  perfis.removeAt(index);
+                }
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('${perfil['nome']} foi bloqueado')),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -123,7 +167,7 @@ class _MatchPageState extends State<MatchPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => MatchHistoryPage(),
+                  builder: (_) => MatchHistoryPage(usuarioAtual: widget.usuario),
                 ),
               );
             },
@@ -152,85 +196,94 @@ class _MatchPageState extends State<MatchPage> {
           ),
         ],
       ),
-      body: PageView.builder(
-        itemCount: perfis.length,
-        controller: _controller,
-        itemBuilder: (context, index) {
-          final perfil = perfis[index];
-          final compatibilidade = calcularCompatibilidade(widget.usuario.interesses, perfil['interesses']);
-          final distanciaKm = calcularDistanciaKm(
-            widget.usuario.latitude,
-            widget.usuario.longitude,
-            perfil['latitude'],
-            perfil['longitude'],
-          );
+      body: perfis.isEmpty
+          ? Center(child: Text('Nenhum perfil disponível no momento.'))
+          : PageView.builder(
+              itemCount: perfis.length,
+              controller: _controller,
+              itemBuilder: (context, index) {
+                final perfil = perfis[index];
+                final compatibilidade = calcularCompatibilidade(widget.usuario.interesses, perfil['interesses']);
+                final distanciaKm = calcularDistanciaKm(
+                  widget.usuario.latitude,
+                  widget.usuario.longitude,
+                  perfil['latitude'],
+                  perfil['longitude'],
+                );
 
-          return Card(
-            margin: EdgeInsets.symmetric(vertical: 40, horizontal: 10),
-            elevation: 6,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  radius: 60,
-                  backgroundImage: NetworkImage(perfil['foto']),
-                ),
-                SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      perfil['nome'],
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                    if (perfil['verificado'] == true)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 6.0),
-                        child: Icon(Icons.verified, color: Colors.blue, size: 20),
+                return Card(
+                  margin: EdgeInsets.symmetric(vertical: 40, horizontal: 10),
+                  elevation: 6,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 60,
+                        backgroundImage: NetworkImage(perfil['foto']),
                       ),
-                  ],
-                ),
-                Text(
-                  perfil['interesses'],
-                  style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                ),
-                SizedBox(height: 10),
-                Text('Compatibilidade: $compatibilidade pontos'),
-                if (distanciaKm != null)
-                  Text('Distância: ${distanciaKm.toStringAsFixed(1)} km'),
-                SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-                      child: Text('Passar'),
-                      onPressed: () {
-                        _controller.nextPage(
-                          duration: Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      },
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.pink),
-                      child: Text('Curtir'),
-                      onPressed: () {
-                        salvarMatch(perfil);
-                        _controller.nextPage(
-                          duration: Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      },
-                    ),
-                  ],
-                )
-              ],
+                      SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            perfil['nome'],
+                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                          ),
+                          if (perfil['verificado'] == true)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 6.0),
+                              child: Icon(Icons.verified, color: Colors.blue, size: 20),
+                            ),
+                        ],
+                      ),
+                      Text(
+                        perfil['interesses'],
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                      ),
+                      SizedBox(height: 10),
+                      Text('Compatibilidade: $compatibilidade pontos'),
+                      if (distanciaKm != null)
+                        Text('Distância: ${distanciaKm.toStringAsFixed(1)} km'),
+                      SizedBox(height: 30),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                            child: Text('Passar'),
+                            onPressed: () {
+                              _controller.nextPage(
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.pink),
+                            child: Text('Curtir'),
+                            onPressed: () {
+                              salvarMatch(perfil);
+                              _controller.nextPage(
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12),
+                      ElevatedButton.icon(
+                        icon: Icon(Icons.block),
+                        label: Text('Bloquear'),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                        onPressed: () => bloquearPerfil(perfil, index),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'models/usuario.dart';
 
@@ -15,14 +16,33 @@ class VerificacaoPage extends StatefulWidget {
 class _VerificacaoPageState extends State<VerificacaoPage> {
   File? imagemSelfie;
 
-  Future<void> tirarSelfie() async {
-    final picker = ImagePicker();
-    final imagem = await picker.pickImage(source: ImageSource.camera);
+  Future<void> selecionarImagem() async {
+    try {
+      if (Platform.isAndroid || Platform.isIOS) {
+        final picker = ImagePicker();
+        final imagem = await picker.pickImage(source: ImageSource.camera);
 
-    if (imagem != null) {
-      setState(() {
-        imagemSelfie = File(imagem.path);
-      });
+        if (imagem != null) {
+          setState(() {
+            imagemSelfie = File(imagem.path);
+          });
+        }
+      } else {
+        final resultado = await FilePicker.platform.pickFiles(type: FileType.image);
+        if (resultado != null && resultado.files.single.path != null) {
+          setState(() {
+            imagemSelfie = File(resultado.files.single.path!);
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Nenhuma imagem selecionada')),
+          );
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao selecionar imagem')),
+      );
     }
   }
 
@@ -39,21 +59,27 @@ class _VerificacaoPageState extends State<VerificacaoPage> {
 
   @override
   Widget build(BuildContext context) {
+    final textoInstrucao = Platform.isAndroid || Platform.isIOS
+        ? 'Tire uma selfie para confirmar sua identidade'
+        : 'Selecione uma imagem do seu computador para verificação';
+
     return Scaffold(
       appBar: AppBar(title: Text('Verificação de Perfil')),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            Text('Tire uma selfie para confirmar sua identidade'),
+            Text(textoInstrucao),
             SizedBox(height: 20),
             imagemSelfie != null
                 ? Image.file(imagemSelfie!, height: 200)
                 : Icon(Icons.person, size: 100, color: Colors.grey),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: tirarSelfie,
-              child: Text('Tirar Selfie'),
+              onPressed: selecionarImagem,
+              child: Text(Platform.isAndroid || Platform.isIOS
+                  ? 'Tirar Selfie'
+                  : 'Selecionar Imagem'),
             ),
             SizedBox(height: 20),
             ElevatedButton(

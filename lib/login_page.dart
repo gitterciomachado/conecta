@@ -69,13 +69,13 @@ class _LoginPageState extends State<LoginPage> {
       final posicao = await Geolocator.getCurrentPosition();
 
       final novoUsuario = Usuario(
+        id: email, // ✅ ID obrigatório incluído
         email: email,
         senha: senha,
         nome: 'Tércio',
         idade: 30,
         interesses: 'Música, Viagens',
-        fotoUrl:
-            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+        fotoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
         latitude: posicao.latitude,
         longitude: posicao.longitude,
         genero: 'Masculino',
@@ -91,6 +91,8 @@ class _LoginPageState extends State<LoginPage> {
         valoresPessoais: 'Família, liberdade',
         estiloViagem: 'Ama viajar',
         estiloVida: 'Mais social',
+        verificado: false,
+        bloqueados: [],
       );
 
       box.put(email, novoUsuario);

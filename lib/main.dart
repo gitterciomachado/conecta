@@ -8,13 +8,12 @@ import 'chat_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  
-  await Hive.deleteBoxFromDisk('usuarios'); // Apaga a box
-  await Hive.openBox<Usuario>('usuarios');  // Reabre vazia
 
+  // Registro dos adapters Hive
   Hive.registerAdapter(UsuarioAdapter());
   Hive.registerAdapter(MatchAdapter());
 
+  // Abertura das boxes
   await Hive.openBox<Usuario>('usuarios');
   await Hive.openBox<Match>('matches');
 
@@ -26,7 +25,18 @@ class ConectaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Conecta ❤️',
-      theme: ThemeData(primarySwatch: Colors.pink),
+      theme: ThemeData(
+        primarySwatch: Colors.pink,
+        scaffoldBackgroundColor: Colors.pink[50],
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.pink,
+            foregroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            textStyle: TextStyle(fontSize: 16),
+          ),
+        ),
+      ),
       routes: {
         '/chat': (context) {
           final match = ModalRoute.of(context)!.settings.arguments as Match;
@@ -42,21 +52,26 @@ class WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.pink[50],
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Bem-vindo ao Conecta ❤️',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+              Text(
+                'Bem-vindo ao Conecta ❤️',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
               SizedBox(height: 40),
-              ElevatedButton(
-                child: Text('Entrar'),
+              ElevatedButton.icon(
+                icon: Icon(Icons.login),
+                label: Text('Entrar'),
                 onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => LoginPage()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => LoginPage()),
+                  );
                 },
               ),
             ],

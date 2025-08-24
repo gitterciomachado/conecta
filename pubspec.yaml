@@ -4,7 +4,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.3.0 <4.0.0"
+  sdk: ">=3.9.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -14,20 +14,19 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
 
-  # Geração de adapters Hive
-  build_runner: ^2.4.8
-  hive_generator: ^2.0.1
+  # Localização e distância
+  geolocator: ^10.1.0
 
   # Imagens locais e verificação por selfie
   image_picker: ^1.0.7
   path_provider: ^2.1.2
 
-  # Localização e distância
-  geolocator: ^10.1.0
-
   # Mapa interativo compatível com Windows
   flutter_map: ^6.1.0
   latlong2: ^0.9.0
+
+  # Abrir arquivos (selfie, documentos, etc.)
+  file_picker: ^5.5.0
 
   # Ícones padrão do iOS
   cupertino_icons: ^1.0.6
@@ -35,6 +34,13 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+  # Geração de adapters Hive
+  build_runner: ^2.4.8
+  hive_generator: ^2.0.1
+
+  # Compatibilidade com Hive Generator
+  analyzer: ^6.4.1
 
 flutter:
   uses-material-design: true

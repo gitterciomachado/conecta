@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'models/usuario.dart';
+import 'bloqueios_page.dart'; // Certifique-se de criar esse arquivo
 
 class EditProfilePage extends StatefulWidget {
   final Usuario usuario;
@@ -149,13 +150,32 @@ class _EditProfilePageState extends State<EditProfilePage> {
         child: ListView(
           children: [
             Center(
-              child: ClipOval(
-                child: Image(
-                  image: imagem,
-                  width: 120,
-                  height: 120,
-                  fit: BoxFit.cover,
-                ),
+              child: Column(
+                children: [
+                  ClipOval(
+                    child: Image(
+                      image: imagem,
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  if (widget.usuario.verificado)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.verified, color: Colors.blue),
+                          SizedBox(width: 6),
+                          Text(
+                            'Perfil verificado',
+                            style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
             ),
             const SizedBox(height: 16),
@@ -182,6 +202,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ElevatedButton(
               onPressed: salvarPerfil,
               child: const Text('Salvar'),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              icon: Icon(Icons.block),
+              label: Text('Gerenciar bloqueios'),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BloqueiosPage(usuario: widget.usuario),
+                  ),
+                );
+              },
             ),
           ],
         ),

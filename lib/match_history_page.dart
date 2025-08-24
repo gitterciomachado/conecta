@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/match.dart';
+import 'models/usuario.dart';
 import 'match_detail_page.dart';
 
 class MatchHistoryPage extends StatefulWidget {
-  const MatchHistoryPage({Key? key}) : super(key: key);
+  final Usuario usuarioAtual;
+
+  const MatchHistoryPage({Key? key, required this.usuarioAtual}) : super(key: key);
 
   @override
   State<MatchHistoryPage> createState() => _MatchHistoryPageState();
@@ -37,9 +40,12 @@ class _MatchHistoryPageState extends State<MatchHistoryPage> {
               valueListenable: matchBox.listenable(),
               builder: (context, box, _) {
                 final filtro = filtroController.text.toLowerCase();
+
                 final matches = box.values.where((match) {
-                  return match.nome.toLowerCase().contains(filtro) ||
+                  final bloqueado = widget.usuarioAtual.bloqueados.contains(match.usuarioAlvoId);
+                  final atendeFiltro = match.nome.toLowerCase().contains(filtro) ||
                       match.interesses.toLowerCase().contains(filtro);
+                  return !bloqueado && atendeFiltro;
                 }).toList();
 
                 if (matches.isEmpty) {
@@ -64,8 +70,10 @@ class _MatchHistoryPageState extends State<MatchHistoryPage> {
                             IconButton(
                               icon: Icon(match.favorito ? Icons.star : Icons.star_border),
                               onPressed: () {
-                                match.favorito = !match.favorito;
-                                match.save();
+                                setState(() {
+                                  match.favorito = !match.favorito;
+                                  match.save();
+                                });
                               },
                             ),
                             IconButton(
@@ -82,7 +90,9 @@ class _MatchHistoryPageState extends State<MatchHistoryPage> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => MatchDetailPage(match: match)),
+                            MaterialPageRoute(
+                              builder: (_) => MatchDetailPage(match: match),
+                            ),
                           );
                         },
                       ),

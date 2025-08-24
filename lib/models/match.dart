@@ -16,10 +16,14 @@ class Match extends HiveObject {
   @HiveField(3)
   bool favorito;
 
+  @HiveField(4)
+  String usuarioAlvoId;
+
   Match({
     required this.nome,
     required this.interesses,
     required this.fotoUrl,
     this.favorito = false,
+    required this.usuarioAlvoId,
   });
 }
